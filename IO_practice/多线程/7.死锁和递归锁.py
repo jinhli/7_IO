@@ -52,6 +52,7 @@ class MyThread(Thread):
     def run(self):
         self.func1()
         self.func2()
+
     def func1(self):
         mutexA.acquire()
         print('\033[41m%s 拿到A锁\033[0m' %self.name)
@@ -75,7 +76,7 @@ class MyThread(Thread):
 
 
 if __name__ == '__main__':
-    for i in range(10):
+    for i in range(3):
         t = MyThread()
         t.start()
 

@@ -17,13 +17,17 @@ def conn_mysql():
         print('<%s>第%s次尝试链接' % (threading.current_thread().getName(), count))
         event.wait(0.5)
         count += 1
+        # event.set()
     print('<%s>链接成功' % threading.current_thread().getName())
 
 
 def check_mysql():
     print('\033[45m[%s]正在检查mysql\033[0m' % threading.current_thread().getName())
     time.sleep(random.randint(2,4))
-    event.set()
+    while not event.isSet():
+        print('连接失败', threading.current_thread().getName())
+        event.set()
+    # event.set()
 
 
 
@@ -34,6 +38,7 @@ if __name__ == '__main__':
     check=Thread(target=check_mysql)
 
     conn1.start()
+    # event.clear()
     conn2.start()
     check.start()
 

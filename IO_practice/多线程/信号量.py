@@ -18,7 +18,14 @@ def func():
 
 
 if __name__ == '__main__':
-    sm = Semaphore(5)
+    sm = Semaphore(3)
     for i in range(10):
         t = Thread(target=func)
         t.start()
+
+
+
+
+
+
+

@@ -4,7 +4,7 @@
 # Email: bonnie922713@126.com
 # Date: 5/26/18
 
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 import time
 import random
 
@@ -52,17 +52,28 @@ import random
 #     p2.start()
 #     p3.start()
 #     print('zhu')
+#
+# n = 100
+#
+#
+# def work():
+#     global n
+#     n=0
+#     print('子进程内: ',n)
+#
+#
+# if __name__ == '__main__':
+#     p=Process(target=work)
+#     p.start()
+#     print('主进程内: ',n)
+#
+q = Queue(2)
+q.put(1)
+q.put(2)
+print(q.full())
 
-n = 100
+print(q.qsize())
+q.get()
 
-
-def work():
-    global n
-    n=0
-    print('子进程内: ',n)
-
-
-if __name__ == '__main__':
-    p=Process(target=work)
-    p.start()
-    print('主进程内: ',n)
+print(q.empty())
+print(q.qsize())
