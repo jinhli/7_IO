@@ -69,7 +69,9 @@ class Ftp_server:
         while True:
             self.conn, self.addr = self.server.accept()
             print('got a new connection from %s......' % (self.addr,))
-            self.handle()
+            t = self.pool.get_thread()   #
+            obj = t(target=self.handle, args=(self.conn, ))
+            obj.start
 
     def stop_server(self):
         print('stop ftp server')
@@ -98,7 +100,10 @@ class Ftp_server:
                 if action_type:
                     if hasattr(self, '_%s' % action_type):
                         func = getattr(self, '_%s' % action_type)
-                        func(data)
+                        # func(data)
+                        result = func(data)
+                        if result:
+                            self.pool.put_thread()
                 else:
                     print('invalid command')
 
