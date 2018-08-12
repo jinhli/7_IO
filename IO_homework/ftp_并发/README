@@ -2,7 +2,7 @@
 
 命令运行： 服务器端：cd bin
                   python3 bonnie_server.py start
-         客户端：python3 Ftp_client.py -s localhost -P 8081
+         客户端：python3 Ftp_client.py -s 127.0.0.1 -P 8081
  客户端下载，上传文件夹都在client/home
  用户：lili 7890
       bonnie 12345
@@ -40,5 +40,25 @@
 6. 下载断点完成
 7. 服务器端日志功能，登陆，上传，下载
 
+********************************************
+1. 问题1：.download_history -->已解决
+2.线程错乱： -->解决
+
+server -->
+
+        self.username = None  # 登陆用户的用户名
+        self.current_dir = None  #当前目录
+        self.home_dir = None  # 账号的home目录
+        self.quota = None  # 账号当前的配额
+        # self.username = username
+        # self.home_dir = home_dir
+
+client-->
+
+        self.username = None
+        self.current_dir = None
+
+3.quota --> os.lsdir()
+        只有一个文件，如何处理
 
 

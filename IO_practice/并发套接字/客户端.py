@@ -8,7 +8,7 @@
 from socket import *
 
 client = socket(AF_INET,SOCK_STREAM)
-client.connect(('127.0.0.1',8081))
+client.connect(('127.0.0.1',8085))
 
 while True:
     msg= input('>>:').strip()

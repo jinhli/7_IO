@@ -35,10 +35,15 @@
 
 
 from socket import *
-# from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, currentThread
 import threading
 import queue
+
+ADDR='127.0.0.1'
+PORT=8085
+MAX_SOCKET_LISTEN = 5
+MAX_WORKERS = 5
 
 class MyThread():
     """
@@ -67,30 +72,40 @@ class MyThread():
         self.q.put(threading.Thread)
 
 
+class Ftp_server:
 
-def communicate(conn):
-    while True:
-        try:
-            data = conn.recv(1024)
-            if not data:break
-            conn.send(data.upper())
-        except ConnectionError:
-            break
+    def __init__(self):
+        self.server = socket(AF_INET, SOCK_STREAM)
+        self.server.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.server.bind((ADDR, PORT))
+        self.server.listen(MAX_SOCKET_LISTEN)
+        self.pool = MyThread(MAX_WORKERS)
 
-def server(ip,port):
-    server = socket(AF_INET, SOCK_STREAM)
-    server.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    server.bind((ip, port))
-    server.listen(5)
+    def communicate(self, conn):
+        while True:
+            try:
+                data = conn.recv(1024)
+                if not data:
+                    print('no data, break')
+                    break
+                else:
+                    conn.send(data.upper())
+                    self.pool.put_thread()
+                    continue
+            except ConnectionError:
+                break
 
-    while True:
-        conn, addr = server.accept()
-        pool.submit(communicate, conn)
-
+    def start_server(self):
+        while True:
+            conn, addr = self.server.accept()
+            print('got a new connection from %s......' % (addr,))
+            t = self.pool.get_thread()  #
+            obj = t(target=self.communicate, args=(conn,))
+            obj.start()
 
 
 if __name__== '__main__':
-    pool =  ThreadPoolExecutor(2)
-    server('127.0.0.1', 8081)
 
+    ftp_server = Ftp_server()
+    ftp_server.start_server()
 

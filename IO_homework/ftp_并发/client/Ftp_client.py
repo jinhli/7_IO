@@ -35,7 +35,6 @@ class Ftp_client:
         # print(self.options,self.args)
         self.username = None
         self.current_dir = None
-        self.shelve_obj = shelve.open('.download_history')
 
     def argv_verification(self):
         if not self.options.server or not self.options.port:
@@ -72,16 +71,18 @@ class Ftp_client:
         检查 下载中断的文件
         :return:
         """
-        if list(self.shelve_obj.keys()):
+        download_history = '%s.download_history' % self.username
+        shelve_obj = shelve.open(download_history)
+        if list(shelve_obj.keys()):
             print('-------------------Unfinished file list---------------')
             # for key in self.shelve_obj.keys():
             #     print(key)
             #     print(self.shelve_obj[key])
 
-            for index, key in enumerate(self.shelve_obj.keys()):
+            for index, key in enumerate(shelve_obj.keys()):
                 file_path = os.path.join(HOME_DIR, key)  # 下载中段文件的路径
                 received_file_size = os.path.getsize(file_path)  # 获取文件已下载大小
-                print("%s.  %s  文件大小%s  已经下载%s" % (index, key, self.shelve_obj[key]['file_size'], received_file_size))
+                print("%s.  %s  文件大小%s  已经下载%s" % (index, key, shelve_obj[key]['file_size'], received_file_size))
             while True:
                 choice = input('[selected the file index to re-download]>>>>').strip()
                 if not choice:continue
@@ -89,13 +90,13 @@ class Ftp_client:
                 if choice .isdigit():
                     choice = int(choice)
                     if 0 <= choice <= index:   # 最后一次的index
-                        selected_file = list(self.shelve_obj.keys())[choice]
-                        selected_file_path = os.path.join(HOME_DIR, list(self.shelve_obj.keys())[choice])
+                        selected_file = list(shelve_obj.keys())[choice]
+                        selected_file_path = os.path.join(HOME_DIR, list(shelve_obj.keys())[choice])
                         have_received_size = os.path.getsize(selected_file_path)   # 这个地方可以优化， 当前客户端所在的目录
                         print('tell server to resend file', selected_file)
-                        original_file_name = self.shelve_obj[selected_file]['file_name']
-                        self.send_header('re_get', file_size=self.shelve_obj[selected_file]['file_size'],
-                                         file_path=self.shelve_obj[selected_file]['file_path'],
+                        original_file_name = shelve_obj[selected_file]['file_name']
+                        self.send_header('re_get', file_size=shelve_obj[selected_file]['file_size'],
+                                         file_path=shelve_obj[selected_file]['file_path'],
                                          file_name=original_file_name,
                                          received_file_size=have_received_size)
                         response = self.recv_message()
@@ -104,7 +105,7 @@ class Ftp_client:
                             self.write_file(response, original_file_name, have_received_size)
                             print('\n')
                             print('file re-get done'.center(50, '-'))
-                            del self.shelve_obj[selected_file]  # 文件下载结束，从shelve 中删除文件下载记录
+                            del shelve_obj[selected_file]  # 文件下载结束，从shelve 中删除文件下载记录
                             original_md5 = response.get('md5')
                             # home_dir = '%s%s' % (HOME_DIR, filename)  # 绝对路径
                             self.verify_md5(original_file_name, original_md5)
@@ -112,6 +113,7 @@ class Ftp_client:
 
                         else:
                             print(response.get('status_msg'))
+        shelve_obj.close()
 
     def interactive(self):
         """处理与ftpserver的所有交互"""
@@ -160,6 +162,8 @@ class Ftp_client:
         下载文件到客户端
         :return: MD5
         """
+        download_history = '%s.download_history' % self.username
+        shelve_obj = shelve.open(download_history)
         # print(self.shelve_obj['2.ape.download'])
         if self.parameter_check(cmd_args, exact_args=1):
             filename = cmd_args[0]
@@ -174,15 +178,16 @@ class Ftp_client:
                     'file_name': filename
                 }
                 file_name = '%s.download' % filename  # 把正在下载的文件加一个后缀
-                self.shelve_obj[file_name] = download_info  # 把正在下载的文件信息保存到文档
+                shelve_obj[file_name] = download_info  # 把正在下载的文件信息保存到文档
                 self.write_file(response, full_path, 0)  # ‘0’接受文件大小的初始化
                 print('\n')
                 print('file get done'.center(50, '-'))
-                del self.shelve_obj[file_name]     # 文件下载结束，从shelve 中删除文件下载记录
+                del shelve_obj[file_name]     # 文件下载结束，从shelve 中删除文件下载记录
                 original_md5 = response.get('md5')
                 self.verify_md5(full_path, original_md5)
             else:
                 print(response.get('status_msg'))
+        shelve_obj.close()
 
     def _put(self, cmd_args):
         """

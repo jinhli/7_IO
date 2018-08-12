@@ -10,9 +10,10 @@ import logging
 sys_path.insert(0, path.dirname(getcwd()))
 
 BASE_DIR = path.dirname(path.dirname(path.abspath(__file__))) #整个程序的主目录
-HOME_DIR= r'%s/home/' % BASE_DIR
 
-account = r'%s/conf/account.ini' % BASE_DIR
+HOME_DIR = path.join(BASE_DIR, 'home')
+account = path.join(BASE_DIR, 'conf/account.ini')
+
 
 ADDR = '127.0.0.1'
 PORT = 8080

@@ -5,13 +5,14 @@
 # Date: 8/4/18
 
 import threading
+
 import queue
 
 class MyThread():
     """
         自定义的线程类，使用queue支持简单的线程池
     """
-    def __init__(self,maxsize):
+    def __init__(self, maxsize):
         """
         :param maxsize:  队列的数量
         """
@@ -31,5 +32,7 @@ class MyThread():
         """  往队列中存放线程对象
         :return:
         """
+        print('把执行完的线程放回队列---1》')
         self.q.put(threading.Thread)
+        print('把执行完的线程放回队列---》2')
 
